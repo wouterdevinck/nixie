@@ -137,7 +137,7 @@ void loadTasks() {
   // Update dots
   i++;
   tasks[i].previous = 0;
-  tasks[i].interval = 500;
+  tasks[i].interval = 1000;
   tasks[i].function = updateDots;
   // Update display
   i++;
