@@ -7,6 +7,7 @@
 //  * Chronodot library (for DS3231)   - https://github.com/Stephanie-Maks/Arduino-Chronodot
 
 #include "Chronodot.h"
+#include "WouterRTOS.h"
 #include <Wire.h>
 
 // Pins to buttons
@@ -29,16 +30,6 @@ byte frame[8]; // 8 bytes = 64 bits = 6 digits @ 10 bits + 2 dots @ 1 bit + 2 un
 // The real time clock chip (DS3231)
 Chronodot RTC;
 
-// Tasks
-const int noTasks = 3;
-const int wait = 10;
-typedef struct Tasks {
-   long unsigned int previous;
-   int interval;
-   void (*function)();
-} Task;
-Task tasks[noTasks];
-
 // Debounce buttons
 boolean sw1db;
 boolean sw2db;
@@ -57,6 +48,9 @@ const byte minuteUnits[] = {22,31,30,29,28,27,26,25,24,23};
 const byte secondTens[]  = {11,20,19,18,17,16,15,14,13,12};
 const byte secondUnits[] = {1,10,9,8,7,6,5,4,3,2};
 // Not in use: positions 0 and 43
+
+// Real time OS
+WouterRTOS rtos;
 
 void setup() {
   
@@ -107,9 +101,11 @@ void setup() {
   digitalWrite(pinHvEN, HIGH); // There is now 170V on the board!
   hvon = true;
 
-  // Initiate the tasks
-  Serial.println(F("[INFO] 5. Tasks"));
-  loadTasks();
+  // Initiate the OS tasks
+  Serial.println(F("[INFO] 5. Init RTOS tasks"));
+  rtos.addTask(serialMenu, 100);
+  rtos.addTask(readButtons, 100);
+  rtos.addTask(updateTime, 1000);
   
   // Debug info
   Serial.println(F("[INFO] Clock done booting."));
@@ -117,34 +113,8 @@ void setup() {
   
 }
 
-void loadTasks() {
-  int i = 0;
-  // Listen for input on the serial interface
-  tasks[i].previous = 0;
-  tasks[i].interval = 100;
-  tasks[i].function = serialMenu;
-  // Read the button inputs
-  i++;
-  tasks[i].previous = 0;
-  tasks[i].interval = 100;
-  tasks[i].function = readButtons;
-  // Update time
-  i++;
-  tasks[i].previous = 0;
-  tasks[i].interval = 1000;
-  tasks[i].function = updateTime;
-}
-
 void loop() {
-  unsigned long time = millis();
-  for(int i = 0; i < noTasks; i++) {
-    Task task = tasks[i];
-    if (time - task.previous > task.interval) {
-      tasks[i].previous = time;
-      task.function();
-    }
-  }  
-  delay(wait);
+  rtos.loop();
 }
 
 // task
