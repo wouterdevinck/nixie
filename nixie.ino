@@ -30,7 +30,7 @@ byte frame[8]; // 8 bytes = 64 bits = 6 digits @ 10 bits + 2 dots @ 1 bit + 2 un
 Chronodot RTC;
 
 // Tasks
-const int noTasks = 6;
+const int noTasks = 3;
 const int wait = 10;
 typedef struct Tasks {
    long unsigned int previous;
@@ -44,7 +44,6 @@ boolean sw1db;
 boolean sw2db;
 
 // State
-boolean dotson = false;
 boolean hvon = false;
 boolean mustsetdate = false;
 
@@ -132,23 +131,8 @@ void loadTasks() {
   // Update time
   i++;
   tasks[i].previous = 0;
-  tasks[i].interval = 500;
+  tasks[i].interval = 1000;
   tasks[i].function = updateTime;
-  // Update dots
-  i++;
-  tasks[i].previous = 0;
-  tasks[i].interval = 1000;
-  tasks[i].function = updateDots;
-  // Update display
-  i++;
-  tasks[i].previous = 0;
-  tasks[i].interval = 500;
-  tasks[i].function = updateDisplay;  
-  // Run slot machine effect to prevent cathode poisoning
-  i++;
-  tasks[i].previous = 0;
-  tasks[i].interval = 1000;
-  tasks[i].function = unPoison;
 }
 
 void loop() {
@@ -165,7 +149,11 @@ void loop() {
 
 // task
 void updateTime() {
+
+  // Get current time from DS3231 RTC chip
   DateTime now = RTC.now();
+
+  // Enable and disable the right segments
   disableSegments(hourTens, 10);
   disableSegments(hourUnits, 10);
   disableSegments(minuteTens, 10);
@@ -181,14 +169,24 @@ void updateTime() {
   int second = now.second();
   enableSegment(secondTens[(second / 10) % 10]);
   enableSegment(secondUnits[second % 10]);
-}
 
-// task
-void unPoison() {
-  DateTime now = RTC.now();
+  // Flash the dots once per second
+  if (second % 2 == 0) {
+    disableSegment(leftDot);
+    disableSegment(rightDot);
+  } else {
+    enableSegment(leftDot);
+    enableSegment(rightDot);
+  }
+
+  // Write to display
+  updateDisplay();
+
+  // Once an hour, run the slot machine effect to prevent cathode poisoning
   if (now.minute() == 0 && now.second() == 0) {
     runSlotMachine();
   }
+  
 }
 
 void runSlotMachine() {
@@ -204,19 +202,6 @@ void runSlotMachine() {
       updateDisplay();
       delay(100);
     }
-  }
-}
-
-// task
-void updateDots() {
-  if (dotson) {
-    dotson = false;
-    disableSegment(leftDot);
-    disableSegment(rightDot);
-  } else {
-    dotson = true;
-    enableSegment(leftDot);
-    enableSegment(rightDot);
   }
 }
 
@@ -245,7 +230,6 @@ inline void disableSegment(byte segment) {
   frame[f] &= ~(1 << b);  
 }
 
-// task
 void updateDisplay() {
   digitalWrite(pinHvLE, LOW);
   for(int i = 0; i < 8; ++i) {
