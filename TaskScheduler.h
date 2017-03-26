@@ -1,7 +1,7 @@
-#ifndef WouterRTOS_h
-#define WouterRTOS_h
+#ifndef TaskScheduler_h
+#define TaskScheduler_h
 
-#include "WouterRTOSSettings.h"
+#include "Globals.h"
 
 typedef struct Tasks {
    long unsigned int previous;
@@ -9,9 +9,9 @@ typedef struct Tasks {
    void (*function)();
 } Task;
 
-class WouterRTOS {
+class TaskScheduler {
   public:
-    WouterRTOS();
+    TaskScheduler();
     void loop();
     void addTask(void (*function)(), int interval);
   private:

@@ -1,5 +1,4 @@
-#include "WouterRTOS.h"
-#include "WouterRTOSSettings.h"
+#include "TaskScheduler.h"
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <util/atomic.h>
@@ -14,7 +13,7 @@ ISR (TIMER1_COMPA_vect) {
   timer1_millis++;
 }
 
-WouterRTOS::WouterRTOS() {
+TaskScheduler::TaskScheduler() {
   TCCR1B |= (1 << WGM12) | (1 << CS11);
   OCR1AH = (CTC_MATCH_OVERFLOW >> 8);
   OCR1AL = (uint8_t)CTC_MATCH_OVERFLOW;
@@ -23,7 +22,7 @@ WouterRTOS::WouterRTOS() {
   _count = 0;
 }
 
-unsigned long WouterRTOS::millis() {
+unsigned long TaskScheduler::millis() {
   unsigned long m;
   ATOMIC_BLOCK(ATOMIC_FORCEON) {
     m = timer1_millis;
@@ -31,14 +30,14 @@ unsigned long WouterRTOS::millis() {
   return m;
 }
 
-void WouterRTOS::addTask(void (*function)(), int interval) {
+void TaskScheduler::addTask(void (*function)(), int interval) {
   _tasks[_count].previous = 0;
   _tasks[_count].interval = interval;
   _tasks[_count].function = function;
   _count++;
 }
 
-void WouterRTOS::loop() {
+void TaskScheduler::loop() {
   unsigned long time = millis();
   for(int i = 0; i < NOTASKS; i++) {
     Task task = _tasks[i];
