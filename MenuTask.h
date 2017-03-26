@@ -6,16 +6,18 @@
 #include "NixieDisplay.h"
 #include "Chronodot.h"
 #include "HvSupply.h"
+#include "Settings.h"
 
 class MenuTask {
   public:
-    MenuTask(NixieDisplay* nixie, Chronodot* rtc, HvSupply* hv);
+    MenuTask(NixieDisplay* nixie, Chronodot* rtc, HvSupply* hv, Settings* settings);
     void task();
     void printMenu();
   private: 
     NixieDisplay* _nixie;
     Chronodot* _rtc;
     HvSupply* _hv;
+    Settings* _settings;
     boolean _mustsetdate = false;
     void printTime();
 };

@@ -8,6 +8,8 @@
 
 #include "TaskScheduler.h"
 #include "NixieDisplay.h"
+#include "HvSupply.h"
+#include "Settings.h"
 #include "TimeTask.h"
 #include "MenuTask.h"
 #include "ButtonsTask.h"
@@ -17,8 +19,9 @@ Chronodot rtc;
 TaskScheduler sched;
 NixieDisplay nixie;
 HvSupply hvsupply;
+Settings settings;
 TimeTask timeTask(&nixie, &rtc);
-MenuTask menuTask(&nixie, &rtc, &hvsupply);
+MenuTask menuTask(&nixie, &rtc, &hvsupply, &settings);
 ButtonsTask buttonsTask;
 
 void setup() {
@@ -54,8 +57,12 @@ void setup() {
   Serial.println(F("[INFO] 4. Init DC/DC"));
   hvsupply.begin();
 
+  // Read settings from EEPROM
+  Serial.println(F("[INFO] 5. Read settings from EEPROM"));
+  settings.begin();
+
   // Initiate the OS tasks
-  Serial.println(F("[INFO] 5. Init RTOS tasks"));
+  Serial.println(F("[INFO] 6. Init RTOS tasks"));
   sched.addTask(execMenuTask, 100);
   sched.addTask(execButtonsTask, 100);
   sched.addTask(execTimeTask, 1000);
