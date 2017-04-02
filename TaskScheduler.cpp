@@ -4,6 +4,7 @@
 #include <util/atomic.h>
 
 // This uses Timer 1 to implement millis() - see https://adnbr.co.uk/articles/counting-milliseconds
+// Note: this can also easily be done using the Arduino provided millis() and delay() functions
 
 #define CTC_MATCH_OVERFLOW ((F_CPU / 1000) / 8)
 

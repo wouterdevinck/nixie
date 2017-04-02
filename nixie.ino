@@ -1,10 +1,35 @@
 // Nixie clock firmware
 // ====================
-// December 2016 - March 2017
+// December 2016 - April 2017
 // by Wouter Devinck
 
-// Dependencies:
-//  * Chronodot library (for DS3231)   - https://github.com/Stephanie-Maks/Arduino-Chronodot
+// Dependencies
+// ------------
+//  * Arduino core
+//  * Chronodot library (for DS3231) - https://github.com/Stephanie-Maks/Arduino-Chronodot
+
+// Block diagram
+// -------------
+//           +----------+
+//           |          |   +----------+
+//           |  DS3231  +---+3V battery|
+//           |          |   +----------+
+//           +----------+
+//                 |
+//                 | I2C
+// +---+           |
+// |SW1|   +--------------+     +----------+     +----------+
+// +---+---+              |     |          |     |          |
+//         |  ATmega328p  +-----+  HV5622  +-----+  HV5622  |
+// +---+---+              |     |          |     |          |
+// |SW2|   +--------------+     +----------+     +----------+
+// +---+           |            |  |   |   |     |  |   |   |
+//          +------------+  +----+ | +---+ | +----+ | +---+ |
+//          |            |  |IN14| | |IN3| | |IN14| | |IN3| |
+//          | DC/DC 170V |  +----+ | +---+ | +----+ | +---+ |
+//          |            |      +----+   +----+  +----+   +----+
+//          +------------+      |IN14|   |IN14|  |IN14|   |IN14|
+//                              +----+   +----+  +----+   +----+
 
 #include "TaskScheduler.h"
 #include "NixieDisplay.h"
@@ -15,14 +40,25 @@
 #include "ButtonsTask.h"
 #include <Wire.h>
 
+// Real time clock
 Chronodot rtc;
+
+// "Real Time OS" - simple task scheduler
 TaskScheduler sched;
+
+// HV shift registers
 NixieDisplay nixie;
+
+// DC/DC converter (enable pin is connected to a GPIO)
 HvSupply hvsupply;
+
+// DST settings in EEPROM
 Settings settings;
-TimeTask timeTask(&nixie, &rtc);
-MenuTask menuTask(&nixie, &rtc, &hvsupply, &settings);
-ButtonsTask buttonsTask;
+
+// Tasks that run periodically
+TimeTask timeTask(&nixie, &rtc, &settings);            // Update displayed time
+MenuTask menuTask(&nixie, &rtc, &hvsupply, &settings); // Read from the serial port
+ButtonsTask buttonsTask;                               // Read from the HW buttons
 
 void setup() {
   

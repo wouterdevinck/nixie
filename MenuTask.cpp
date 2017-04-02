@@ -72,25 +72,35 @@ void MenuTask::task() {
       } else if (in == 53) {
         Serial.println(F("You have entered [5] - Europe DST: show settings"));
         if(_settings->getEuropeDstEnabled()) {
-          Serial.println(F("  DST auto-adjust is disabled"))
-        } else {
-          Serial.println(F("  DST auto-adjust is enabled"))
+          Serial.println(F("  DST auto-adjust is enabled"));
           if(_settings->getEuropeSummerTime()) {
-            Serial.println(F("  Summer time is in effect"))
+            Serial.println(F("  Summer time is in effect"));
           } else {
-            Serial.println(F("  Winter time is in effect"))
+            Serial.println(F("  Winter time is in effect"));
           }
+        } else {
+          Serial.println(F("  DST auto-adjust is disabled"));
         }
         printMenu();
       } else if (in == 54) {
         Serial.println(F("You have entered [6] - Europe DST: toggle auto adjust enabled"));
-        //_settings
-
-        Serial.println(F("Done."));
+        if(_settings->getEuropeDstEnabled()) {
+          _settings->setEuropeDstEnabled(false);
+          Serial.println(F("  European DST auto-adjust disabled"));
+        } else {
+          _settings->setEuropeDstEnabled(true);
+          Serial.println(F("  European DST auto-adjust enabled"));          
+        }
         printMenu();
       } else if (in == 55) {
         Serial.println(F("You have entered [7] - Europe DST: toggle summertime"));
-
+        if(_settings->getEuropeSummerTime()) {
+          _settings->setEuropeSummerTime(false);
+          Serial.println(F("  European DST set to winter"));
+        } else {
+          _settings->setEuropeSummerTime(true);
+          Serial.println(F("  European DST set to summer"));          
+        }
         Serial.println(F("Done."));
         printMenu();
       } else {
@@ -117,6 +127,7 @@ void MenuTask::printMenu() {
 
 void MenuTask::printTime() {
   DateTime now = _rtc->now();
+  
   Serial.print(F("Current time is:  "));
   if(now.hour() < 10) Serial.print(F("0"));
   Serial.print(now.hour(), DEC);
@@ -126,5 +137,17 @@ void MenuTask::printTime() {
   Serial.print(F(":"));
   if(now.second() < 10) Serial.print(F("0"));
   Serial.print(now.second(), DEC);
+  Serial.println();
+  
+  Serial.print(F("Current date is:  "));
+  Serial.print(now.day(), DEC);
+  Serial.print(F("-"));
+  Serial.print(now.month(), DEC);
+  Serial.print(F("-"));
+  Serial.print(now.year(), DEC);
+  Serial.println();
+  
+  Serial.print(F("Current day of week is:  "));
+  Serial.print(now.dayOfWeek(), DEC);
   Serial.println();
 }
