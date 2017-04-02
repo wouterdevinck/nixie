@@ -49,12 +49,18 @@ void TimeTask::task() {
   _nixie->disableSegments(minuteUnits, 10);
   _nixie->disableSegments(secondTens, 10);
   _nixie->disableSegments(secondUnits, 10);
-  _nixie->enableSegment(hourTens[(hour / 10) % 10]);
-  _nixie->enableSegment(hourUnits[hour % 10]);
-  _nixie->enableSegment(minuteTens[(minute / 10) % 10]);
-  _nixie->enableSegment(minuteUnits[minute % 10]);
-  _nixie->enableSegment(secondTens[(second / 10) % 10]);
-  _nixie->enableSegment(secondUnits[second % 10]);
+  if(!(_state == SetHour && second % 2 == 0)) {
+    _nixie->enableSegment(hourTens[(hour / 10) % 10]);
+    _nixie->enableSegment(hourUnits[hour % 10]);
+  }
+  if(!(_state == SetMinute && second % 2 == 0)) {
+    _nixie->enableSegment(minuteTens[(minute / 10) % 10]);
+    _nixie->enableSegment(minuteUnits[minute % 10]);
+  }
+  if(!(_state == SetSecond && second % 2 == 0)) {
+    _nixie->enableSegment(secondTens[(second / 10) % 10]);
+    _nixie->enableSegment(secondUnits[second % 10]);
+  }
 
   // Flash the dots once per second
   if (second % 2 == 0) {
@@ -73,4 +79,8 @@ void TimeTask::task() {
     _nixie->runSlotMachine();
   }
   
+}
+
+void TimeTask::setState(State state) {
+  _state = state;
 }

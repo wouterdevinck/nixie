@@ -35,6 +35,7 @@
 #include "NixieDisplay.h"
 #include "HvSupply.h"
 #include "Settings.h"
+#include "Chronodot.h"
 #include "TimeTask.h"
 #include "MenuTask.h"
 #include "ButtonsTask.h"
@@ -58,7 +59,7 @@ Settings settings;
 // Tasks that run periodically
 TimeTask timeTask(&nixie, &rtc, &settings);            // Update displayed time
 MenuTask menuTask(&nixie, &rtc, &hvsupply, &settings); // Read from the serial port
-ButtonsTask buttonsTask;                               // Read from the HW buttons
+ButtonsTask buttonsTask(&rtc, &timeTask);              // Read from the HW buttons
 
 void setup() {
   

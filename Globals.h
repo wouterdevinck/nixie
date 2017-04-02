@@ -1,6 +1,13 @@
 #ifndef Globals_h
 #define Globals_h
 
+typedef enum State {
+  Run,
+  SetHour,
+  SetMinute,
+  SetSecond
+} State;
+
 // Task scheduler
 #define NOTASKS 3
 #define TASKLOOPWAITMS 20
