@@ -102,7 +102,7 @@ void setup() {
   Serial.println(F("[INFO] 6. Init RTOS tasks"));
   sched.addTask(execMenuTask, 100);
   sched.addTask(execButtonsTask, 100);
-  sched.addTask(execTimeTask, 1000);
+  sched.addTask(execTimeTask, 500);
   
   // Debug info
   Serial.println(F("[INFO] Clock done booting."));
